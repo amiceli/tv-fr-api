@@ -4,15 +4,19 @@ Provides api for [XML-TV-Fr](https://github.com/racacax/XML-TV-Fr).
 
 ## Project setup
 
+For easy command you can use [Just](https://github.com/casey/just).
+
 ```bash
-$ npm install
+# just install
+npm install
+npx lefthook install
 ```
 
 ## Compile and run the project
 
 ```bash
 # development
-$ npm run start
+$ npm run start # just start
 
 # watch mode
 $ npm run start:dev
@@ -24,12 +28,8 @@ $ npm run start:prod
 ## Run tests
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# just tests
+npm run test
+npm run test:e2e
 ```
+
