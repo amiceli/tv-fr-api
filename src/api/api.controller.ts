@@ -5,8 +5,8 @@ import { ApiService } from './api.service'
 export class ApiController {
     public constructor(private readonly apiService: ApiService) {}
 
-    @Get()
-    public index(): { status: string } {
-        return this.apiService.index()
+    @Get('status')
+    public status(): Promise<{ status: string; database: string }> {
+        return this.apiService.getStatus()
     }
 }

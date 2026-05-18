@@ -16,8 +16,8 @@ describe('ApiController (e2e)', () => {
         await app.init()
     })
 
-    it('/ (GET)', () => {
-        return request(app.getHttpServer()).get('/').expect(200).expect({ status: 'ok' })
+    it('/api/status (GET)', () => {
+        return request(app.getHttpServer()).get('/api/status').expect(200).expect({ status: 'ok', database: 'ok' })
     })
 
     afterEach(async () => {
