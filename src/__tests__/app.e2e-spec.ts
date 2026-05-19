@@ -1,11 +1,17 @@
 import type { INestApplication } from '@nestjs/common'
 import { Test, type TestingModule } from '@nestjs/testing'
+import { getRepositoryToken } from '@nestjs/typeorm'
 import request from 'supertest'
 import type { App } from 'supertest/types'
+import type { Repository } from 'typeorm'
 import { AppModule } from '../app.module'
+import { Channel } from '../xml-tv/entities/channel.entity'
+import { Program } from '../xml-tv/entities/program.entity'
 
 describe('ApiController (e2e)', () => {
     let app: INestApplication<App>
+    let channelRepository: Repository<Channel>
+    let programRepository: Repository<Program>
 
     beforeEach(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -13,14 +19,48 @@ describe('ApiController (e2e)', () => {
         }).compile()
 
         app = moduleFixture.createNestApplication()
+        app.setGlobalPrefix('api')
         await app.init()
-    })
 
-    it('/api/status (GET)', () => {
-        return request(app.getHttpServer()).get('/api/status').expect(200).expect({ status: 'ok', database: 'ok' })
+        channelRepository = moduleFixture.get<Repository<Channel>>(getRepositoryToken(Channel))
+        programRepository = moduleFixture.get<Repository<Program>>(getRepositoryToken(Program))
+
+        await programRepository.createQueryBuilder().delete().execute()
+        await channelRepository.createQueryBuilder().delete().execute()
     })
 
     afterEach(async () => {
+        await programRepository.createQueryBuilder().delete().execute()
+        await channelRepository.createQueryBuilder().delete().execute()
         await app.close()
+    })
+
+    test('GET /api/status', () => {
+        return request(app.getHttpServer()).get('/api/status').expect(200).expect({ status: 'ok', database: 'ok' })
+    })
+
+    test('GET /api/channels', async () => {
+        await channelRepository.save([
+            { xmlId: 'channel-1', displayName: 'Channel One', icon: null },
+            { xmlId: 'channel-2', displayName: 'Channel Two', icon: 'https://example.com/icon.png' },
+        ])
+
+        const response = await request(app.getHttpServer()).get('/api/channels').expect(200)
+
+        expect(response.body.total).toBe(2)
+        expect(response.body.channels).toHaveLength(2)
+        expect(response.body.channels).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ xmlId: 'channel-1', displayName: 'Channel One', icon: null }),
+                expect.objectContaining({
+                    xmlId: 'channel-2',
+                    displayName: 'Channel Two',
+                    icon: 'https://example.com/icon.png',
+                }),
+            ]),
+        )
+        for (const channel of response.body.channels) {
+            expect(channel).not.toHaveProperty('programs')
+        }
     })
 })
