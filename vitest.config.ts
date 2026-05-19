@@ -8,6 +8,7 @@ export default defineConfig({
         include: ['src/**/__tests__/**/*.spec.ts', 'src/**/*.spec.ts'],
         exclude: ['**/*.e2e-spec.ts', 'node_modules/**', 'dist/**'],
         environment: 'node',
+        passWithNoTests: true,
     },
     plugins: [
         swc.vite({
