@@ -1,41 +1,22 @@
 import type { INestApplication } from '@nestjs/common'
-import { Test, type TestingModule } from '@nestjs/testing'
-import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm'
-import { TYPEORM_MODULE_OPTIONS } from '@nestjs/typeorm/dist/typeorm.constants'
+import { getRepositoryToken } from '@nestjs/typeorm'
 import request from 'supertest'
 import type { App } from 'supertest/types'
-import type { DataSourceOptions, Repository } from 'typeorm'
-import { AppModule } from '../app.module'
+import type { Repository } from 'typeorm'
 import { Channel } from '../xml-tv/entities/channel.entity'
 import { Program } from '../xml-tv/entities/program.entity'
-import { createPgMemDataSource } from './pg-mem-data-source'
+import { createTestApp } from './helpers/create-test-app'
 
-describe('ApiController (e2e)', () => {
+describe('GET /api/channels (e2e)', () => {
     let app: INestApplication<App>
     let channelRepository: Repository<Channel>
     let programRepository: Repository<Program>
 
     beforeEach(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
-        })
-            .overrideProvider(getDataSourceToken())
-            .useFactory({
-                inject: [TYPEORM_MODULE_OPTIONS],
-                factory: (options: DataSourceOptions) =>
-                    createPgMemDataSource({
-                        ...options,
-                        entities: [Channel, Program],
-                    } as DataSourceOptions),
-            })
-            .compile()
-
-        app = moduleFixture.createNestApplication()
-        app.setGlobalPrefix('api')
-        await app.init()
-
-        channelRepository = moduleFixture.get<Repository<Channel>>(getRepositoryToken(Channel))
-        programRepository = moduleFixture.get<Repository<Program>>(getRepositoryToken(Program))
+        const { app: testApp, module } = await createTestApp()
+        app = testApp
+        channelRepository = module.get<Repository<Channel>>(getRepositoryToken(Channel))
+        programRepository = module.get<Repository<Program>>(getRepositoryToken(Program))
 
         await programRepository.createQueryBuilder().delete().execute()
         await channelRepository.createQueryBuilder().delete().execute()
@@ -47,11 +28,7 @@ describe('ApiController (e2e)', () => {
         await app.close()
     })
 
-    test('GET /api/status', () => {
-        return request(app.getHttpServer()).get('/api/status').expect(200).expect({ status: 'ok', database: 'ok' })
-    })
-
-    test('GET /api/channels', async () => {
+    test('returns paginated channels', async () => {
         await channelRepository.save([
             { xmlId: 'channel-1', displayName: 'Channel One', icon: null },
             { xmlId: 'channel-2', displayName: 'Channel Two', icon: 'https://example.com/icon.png' },
@@ -66,11 +43,7 @@ describe('ApiController (e2e)', () => {
         expect(response.body.channels).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ xmlId: 'channel-1', displayName: 'Channel One', icon: null }),
-                expect.objectContaining({
-                    xmlId: 'channel-2',
-                    displayName: 'Channel Two',
-                    icon: 'https://example.com/icon.png',
-                }),
+                expect.objectContaining({ xmlId: 'channel-2', displayName: 'Channel Two', icon: 'https://example.com/icon.png' }),
             ]),
         )
         for (const channel of response.body.channels) {
@@ -78,7 +51,7 @@ describe('ApiController (e2e)', () => {
         }
     })
 
-    test('GET /api/channels?page=1&limit=1', async () => {
+    test('respects page and limit', async () => {
         await channelRepository.save([
             { xmlId: 'channel-1', displayName: 'Alpha', icon: null },
             { xmlId: 'channel-2', displayName: 'Beta', icon: null },
@@ -93,7 +66,7 @@ describe('ApiController (e2e)', () => {
         expect(response.body.channels[0].displayName).toBe('Alpha')
     })
 
-    test('GET /api/channels?order=desc', async () => {
+    test('respects order=desc', async () => {
         await channelRepository.save([
             { xmlId: 'channel-1', displayName: 'Alpha', icon: null },
             { xmlId: 'channel-2', displayName: 'Beta', icon: null },
