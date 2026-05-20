@@ -23,6 +23,9 @@ tests:
 biome:
     npm run biome
 
+clean_db:
+    docker exec -it tv-fr-postgres psql -U tvfr -d tvfr -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+
 postgres:
     set -a && source .env && set +a && \
     docker run --rm -d \

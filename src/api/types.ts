@@ -30,7 +30,7 @@ export enum ChannelSortField {
 }
 
 export type PaginatedChannelsResponse = PaginatedResponse & {
-    channels: Channel[]
+    channels: Array<Channel & { urls: string[] }>
 }
 
 export type ChannelDetailsResponse = {

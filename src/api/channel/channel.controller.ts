@@ -1,5 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Controller, Get, Param, Query, Req } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import type { Request } from 'express'
 import { type ChannelDetailsResponse, ChannelSortField, type PaginatedChannelsResponse, type PaginationQuery, SortQuery } from '../types'
 import { ChannelService } from './channel.service'
 
@@ -27,13 +28,22 @@ export class ChannelController {
     })
     @ApiQuery({ name: 'order', required: false, enum: SortQuery, description: 'Sort direction', example: SortQuery.ASC })
     @ApiOkResponse({ description: 'Paginated list of channels' })
-    public async channels(@Query() query: PaginationQuery<ChannelSortField>): Promise<PaginatedChannelsResponse> {
+    public async channels(@Req() req: Request, @Query() query: PaginationQuery<ChannelSortField>): Promise<PaginatedChannelsResponse> {
         const { page, limit, order } = this.parsePagination(query)
         const sort = Object.values(ChannelSortField).includes(query.sort as ChannelSortField)
             ? (query.sort as ChannelSortField)
             : ChannelSortField.DisplayName
+        const baseUrl = `${req.protocol}://${req.get('Host')}/api/channels`
 
-        return this.channelService.listChannels({ page, limit, sort, order })
+        const { channels, ...rest } = await this.channelService.listChannels({ page, limit, sort, order })
+
+        return {
+            ...rest,
+            channels: channels.map((c) => ({
+                ...c,
+                urls: [`${baseUrl}/${c.xmlId}`, `${baseUrl}/${c.id}`],
+            })),
+        }
     }
 
     @Get('channels/:id')
