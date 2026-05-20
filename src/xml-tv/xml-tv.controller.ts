@@ -1,7 +1,9 @@
 import { Controller, Get, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
+import { ApiExcludeController } from '@nestjs/swagger'
 import { XmlTvService } from './xml-tv.service'
 
+@ApiExcludeController()
 @Controller('xml-tv')
 export class XmlTvController {
     public constructor(private readonly xmlTvService: XmlTvService) {}
