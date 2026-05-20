@@ -109,15 +109,31 @@ describe('ChannelController', () => {
         test('returns channel with current and day programs (by xmlId)', async () => {
             const channel = await channelRepository.save({ xmlId: 'tf1.fr', displayName: 'TF1', icon: null })
 
-            const now = Date.now()
+            // Use fixed times that work any time of day: create programs at known UTC times
+            // that are guaranteed to be "today" regardless of when the test runs
+            const baseDate = new Date()
+            baseDate.setUTCHours(0, 0, 0, 0)
+            const baseTime = baseDate.getTime()
             const oneHour = 60 * 60 * 1000
-            const oneDay = 24 * oneHour
+            const now = Date.now()
 
+            // Create programs at specific times: 06:00, 10:00, 15:00, 22:00 UTC
+            // This way they're always in the same calendar day
             await programRepository.save([
-                buildProgram('Yesterday show', channel.xmlId, new Date(now - oneDay - 2 * oneHour), new Date(now - oneDay - oneHour)),
+                buildProgram(
+                    'Yesterday show',
+                    channel.xmlId,
+                    new Date(baseTime - 24 * oneHour + 6 * oneHour),
+                    new Date(baseTime - 24 * oneHour + 7 * oneHour),
+                ),
                 buildProgram('Current show', channel.xmlId, new Date(now - oneHour), new Date(now + oneHour)),
-                buildProgram('Later today', channel.xmlId, new Date(now + 2 * oneHour), new Date(now + 3 * oneHour)),
-                buildProgram('Tomorrow show', channel.xmlId, new Date(now + oneDay + 2 * oneHour), new Date(now + oneDay + 3 * oneHour)),
+                buildProgram('Later today', channel.xmlId, new Date(baseTime + 15 * oneHour), new Date(baseTime + 16 * oneHour)),
+                buildProgram(
+                    'Tomorrow show',
+                    channel.xmlId,
+                    new Date(baseTime + 24 * oneHour + 6 * oneHour),
+                    new Date(baseTime + 24 * oneHour + 7 * oneHour),
+                ),
             ])
 
             const response = await request(app.getHttpServer()).get('/api/channels/tf1.fr').expect(200)
