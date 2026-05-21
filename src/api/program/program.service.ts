@@ -36,6 +36,7 @@ export class ProgramService {
             order: { [query.sort]: query.order.toUpperCase() as 'ASC' | 'DESC' },
             skip: (query.page - 1) * query.limit,
             take: query.limit,
+            relations: { channel: true },
         })
 
         return {

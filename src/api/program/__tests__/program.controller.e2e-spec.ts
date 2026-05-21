@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common'
 import { getRepositoryToken } from '@nestjs/typeorm'
+import { addHours, addMinutes, subHours, subMinutes } from 'date-fns'
 import request from 'supertest'
 import type { App } from 'supertest/types'
 import type { Repository } from 'typeorm'
@@ -56,43 +57,68 @@ describe('ProgramController', () => {
         test('returns only programs airing now', async () => {
             const now = Date.now()
 
+            await channelRepository.save([
+                { xmlId: 'channel-1', displayName: 'Channel One', icon: null },
+                { xmlId: 'channel-2', displayName: 'Channel Two', icon: 'https://example.com/icon.png' },
+            ])
+
             await programRepository.save([
                 buildProgram({
                     title: 'Past show',
-                    start: new Date(now - 3 * 60 * 60 * 1000),
-                    stop: new Date(now - 2 * 60 * 60 * 1000),
+                    start: subHours(now, 3),
+                    stop: subHours(now, 2),
+                    channelXmlId: 'channel-1',
                 }),
                 buildProgram({
                     title: 'Current show A',
-                    start: new Date(now - 30 * 60 * 1000),
-                    stop: new Date(now + 30 * 60 * 1000),
+                    start: subMinutes(now, 30),
+                    stop: addMinutes(now, 30),
+                    channelXmlId: 'channel-2',
                 }),
                 buildProgram({
                     title: 'Current show B',
-                    start: new Date(now - 10 * 60 * 1000),
-                    stop: new Date(now + 50 * 60 * 1000),
+                    start: subMinutes(now, 10),
+                    stop: addMinutes(now, 50),
+                    channelXmlId: 'channel-2',
                 }),
                 buildProgram({
                     title: 'Future show',
-                    start: new Date(now + 60 * 60 * 1000),
-                    stop: new Date(now + 2 * 60 * 60 * 1000),
+                    start: addHours(now, 1),
+                    stop: addHours(now, 2),
+                    channelXmlId: 'channel-2',
                 }),
             ])
 
             const response = await request(app.getHttpServer()).get('/api/programs/now').expect(200)
+            const programs = response.body.programs as Program[]
 
             expect(response.body.total).toBe(2)
             expect(response.body.count).toBe(2)
             expect(response.body.programs).toHaveLength(2)
-            expect(response.body.programs.map((p: Program) => p.title).sort()).toEqual(['Current show A', 'Current show B'])
+            expect(programs.map((p: Program) => p.title).sort()).toEqual(['Current show A', 'Current show B'])
+            expect(programs.at(0)?.channel.displayName).toEqual('Channel Two')
+            expect(programs.at(1)?.channel.displayName).toEqual('Channel Two')
         })
 
         test('supports pagination and order', async () => {
             const now = Date.now()
+
             await programRepository.save([
-                buildProgram({ title: 'Show 1', start: new Date(now - 30 * 60 * 1000), stop: new Date(now + 30 * 60 * 1000) }),
-                buildProgram({ title: 'Show 2', start: new Date(now - 25 * 60 * 1000), stop: new Date(now + 35 * 60 * 1000) }),
-                buildProgram({ title: 'Show 3', start: new Date(now - 20 * 60 * 1000), stop: new Date(now + 40 * 60 * 1000) }),
+                buildProgram({
+                    title: 'Show 1',
+                    start: subMinutes(now, 30),
+                    stop: addMinutes(now, 30),
+                }),
+                buildProgram({
+                    title: 'Show 2',
+                    start: subMinutes(now, 25),
+                    stop: addMinutes(now, 35),
+                }),
+                buildProgram({
+                    title: 'Show 3',
+                    start: subMinutes(now, 20),
+                    stop: addMinutes(now, 40),
+                }),
             ])
 
             const response = await request(app.getHttpServer()).get('/api/programs/now?page=2&limit=1&order=desc').expect(200)
