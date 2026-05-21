@@ -1,8 +1,9 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
-import { type ChannelDetailsResponse, ChannelSortField, type PaginatedChannelsResponse, type PaginationQuery, SortQuery } from '../types'
+import { type PaginationQuery, SortQuery } from '../types'
 import { ChannelService } from './channel.service'
+import { ChannelDetailsResponse, ChannelSortField, PaginatedChannelsResponse } from './types'
 
 type ParsedPagination = {
     page: number

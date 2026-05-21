@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common'
+import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import type { Request } from 'express'
-import { type PaginatedProgramsResponse, type PaginationQuery, ProgramSortField, SortQuery } from '../types'
+import { type PaginationQuery, SortQuery } from '../types'
 import { ProgramService } from './program.service'
+import { PaginatedProgramsResponse, ProgramSortField } from './types'
 
 type ParsedPagination = {
     page: number
@@ -31,18 +31,11 @@ export class ProgramController {
     @ApiQuery({ name: 'sort', required: false, enum: ProgramSortField, description: 'Field to sort by', example: ProgramSortField.StartAt })
     @ApiQuery({ name: 'order', required: false, enum: SortQuery, description: 'Sort direction', example: SortQuery.ASC })
     @ApiOkResponse({ description: 'Paginated list of current programs' })
-    public async now(@Req() req: Request, @Query() query: PaginationQuery<ProgramSortField>): Promise<PaginatedProgramsResponse> {
+    public async now(@Query() query: PaginationQuery<ProgramSortField>): Promise<PaginatedProgramsResponse> {
         const { page, limit, sort, order } = this.parsePagination(query)
-        const { programs, ...rest } = await this.programService.listCurrentPrograms({ page, limit, sort, order })
-        const baseUrl = `${req.protocol}://${req.get('Host')}/api/programs`
+        const result = await this.programService.listCurrentPrograms({ page, limit, sort, order })
 
-        return {
-            ...rest,
-            programs: programs.map((program) => ({
-                ...program,
-                url: `${baseUrl}/${program.id}`,
-            })),
-        }
+        return result
     }
 
     private parsePagination(query: PaginationQuery<ProgramSortField>): ParsedPagination {

@@ -1,23 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { LessThanOrEqual, MoreThan, Repository } from 'typeorm'
-import { Program } from '../../xml-tv/entities/program.entity'
-import { ProgramSortField, SortQuery } from '../types'
-
-type ListProgramsQuery = {
-    page: number
-    limit: number
-    sort: ProgramSortField
-    order: SortQuery
-}
-
-type ListProgramsResult = {
-    programs: Program[]
-    total: number
-    totalPages: number
-    count: number
-    limit: number
-}
+import { Program } from '@/xml-tv/entities/program.entity'
+import { UUID_REGEX } from '../types'
+import { ListProgramsQuery, PaginatedProgramsResponse } from './types'
 
 @Injectable()
 export class ProgramService {
@@ -27,16 +13,20 @@ export class ProgramService {
     ) {}
 
     public async getProgramById(id: string): Promise<Program> {
-        const program = await this.programRepository.findOne({ where: { id } })
+        const where = UUID_REGEX.test(id) ? { id } : { xmlId: id }
+        const program = await this.programRepository.findOne({
+            where,
+            relations: { channel: true },
+        })
 
         if (program) {
             return program
         }
 
-        throw new NotFoundException(`Program not found: ${id}`)
+        throw new NotFoundException(`program.not_found ${id}`)
     }
 
-    public async listCurrentPrograms(query: ListProgramsQuery): Promise<ListProgramsResult> {
+    public async listCurrentPrograms(query: ListProgramsQuery): Promise<PaginatedProgramsResponse> {
         const now = new Date()
         const [programs, total] = await this.programRepository.findAndCount({
             where: {
@@ -49,7 +39,10 @@ export class ProgramService {
         })
 
         return {
-            programs,
+            programs: programs.map((p) => ({
+                ...p,
+                channelDisplayName: p.channel.displayName,
+            })),
             total,
             totalPages: Math.ceil(total / query.limit),
             count: programs.length,
