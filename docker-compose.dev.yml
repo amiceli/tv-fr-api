@@ -1,0 +1,36 @@
+services:
+  tv-api:
+    build: .
+    ports:
+      - "3000:3000"
+    command: npm run start:dev
+    container_name: tv-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      DATABASE_HOST: ${DATABASE_HOST:-tv-api-db}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      DATABASE_NAME: ${DATABASE_NAME:-tvfr}
+      THROTTLE_TTL: ${THROTTLE_TTL:-60000}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-10}
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - tv-api-db
+  tv-api-db:
+    image: postgres:16
+    container_name: tv-api-db
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_DB: ${DATABASE_NAME:-tvfr}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+
+volumes:
+  pgdata_dev:
