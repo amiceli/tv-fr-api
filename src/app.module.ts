@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { APP_GUARD } from '@nestjs/core'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ApiController } from './api/api.controller'
 import { ApiService } from './api/api.service'
@@ -31,8 +33,28 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
         }),
         XmlTvModule,
         TypeOrmModule.forFeature([Channel, Program]),
+        ThrottlerModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                throttlers: [
+                    {
+                        ttl: config.get<number>('THROTTLE_TTL') ?? 60000,
+                        limit: config.get<number>('THROTTLE_LIMIT') ?? 10,
+                    },
+                ],
+                errorMessage: 'rate_limit',
+            }),
+        }),
     ],
     controllers: [ApiController, ChannelController, ProgramController],
-    providers: [ApiService, ChannelService, ProgramService],
+    providers: [
+        ApiService,
+        ChannelService,
+        ProgramService,
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {}
