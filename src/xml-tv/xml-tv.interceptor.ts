@@ -12,7 +12,7 @@ export class HeaderInterceptor implements NestInterceptor {
         const request = context.switchToHttp().getRequest()
         const { headers } = request
         const allowedForward = this.configService.get<string>('ALLOWED_FORWARD')
-        const headerValue = headers[`x-forwarded-for`]
+        const headerValue = headers[`x-internal-cron`]
 
         this.logger.debug(`action=handle_request, header=${headerValue}`)
 
@@ -22,7 +22,7 @@ export class HeaderInterceptor implements NestInterceptor {
             return next.handle()
         }
 
-        this.logger.warn(`action=handle_request, status=block, reason=invalid x-forwarded-for`)
+        this.logger.warn(`action=handle_request, status=block, reason=invalid x-internal-cron`)
 
         return of([])
     }
