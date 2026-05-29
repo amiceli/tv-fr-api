@@ -19,3 +19,7 @@ biome:
 
 clean_db:
     docker exec -it tv-fr-postgres psql -U tvfr -d tvfr -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+
+run_cron:
+    curl -X GET "http://localhost:3000/api/xml-tv/run" \
+        -H "x-forwarded-for: tv-api"
