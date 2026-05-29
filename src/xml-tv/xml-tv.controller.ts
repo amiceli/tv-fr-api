@@ -1,9 +1,10 @@
-import { Controller, Get, Logger } from '@nestjs/common'
+import { Controller, Get, Logger, UseInterceptors } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { ApiExcludeController } from '@nestjs/swagger'
+import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { HeaderInterceptor } from './xml-tv.interceptor'
 import { XmlTvService } from './xml-tv.service'
 
-@ApiExcludeController()
+@ApiTags('xml-tv')
 @Controller('xml-tv')
 export class XmlTvController {
     public constructor(private readonly xmlTvService: XmlTvService) {}
@@ -11,6 +12,16 @@ export class XmlTvController {
     private readonly logger = new Logger(XmlTvController.name)
 
     @Cron(CronExpression.EVERY_DAY_AT_1AM)
+    @UseInterceptors(HeaderInterceptor)
+    @ApiOperation({
+        summary: 'Start cront to download new xml and update database',
+        description: 'Require x-forwarded-for header with valid value to start cron',
+    })
+    @ApiHeader({
+        name: 'x-forwarded-for',
+        required: true,
+        description: 'Header to prevent running cron',
+    })
     @Get(`/run`)
     public startJob() {
         this.logger.log(`action=start_job, timezone=${process.env.TZ}`)
