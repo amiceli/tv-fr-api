@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  tv-api:
+    build: .
+    ports:
+      - "3000:3000"
+    command: sh -c "npm run build && npm run start:prod"
+    container_name: tv-api
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+    depends_on:
+      - tv-api-db
+  tv-api-db:
+    image: postgres:16
+    container_name: tv-api-db
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+
+volumes:
+  pgdata_prod:
