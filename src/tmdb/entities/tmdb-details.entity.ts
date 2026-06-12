@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { AfterLoad, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class TmdbDetails {
@@ -26,14 +26,15 @@ export class TmdbDetails {
     @Column({ type: 'varchar', nullable: true, default: null })
     public poster: string | null
 
-    public get tmdbUrl(): string | null {
-        const { tmdbId, originalName } = this
+    public tmdbUrl: string | null
+
+    @AfterLoad()
+    public buildTmdbUrl() {
         const tmdbURI = this.isMovie ? 'movie' : 'tv'
 
-        if (tmdbId && originalName) {
-            return `https://www.themoviedb.org/${tmdbURI}/${tmdbId}-${originalName.toLowerCase()}`
-        }
-
-        return null
+        this.tmdbUrl =
+            this.tmdbId && this.originalName
+                ? `https://www.themoviedb.org/${tmdbURI}/${this.tmdbId}-${encodeURIComponent(this.originalName.toLowerCase())}`
+                : null
     }
 }
