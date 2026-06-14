@@ -31,19 +31,19 @@ Process endpoint (`x-internal-cron` header is required) :
 
 ## Environment variables
 
-| Variable | Default |
-|---|---|
-| `DATABASE_HOST` | |
-| `DATABASE_PORT` | `5432` |
-| `DATABASE_USER` | |
-| `DATABASE_PASSWORD` | |
-| `DATABASE_NAME` | |
-| `PORT` | `3000` |
-| `THROTTLE_TTL` | `60000` |
-| `THROTTLE_LIMIT` | `10` |
-| `ALLOWED_FORWARD` | |
-| `TMDB_API_KEY` | |
-| `ENABLE_CRON` | `false` |
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_HOST` | | |
+| `DATABASE_PORT` | `5432` | |
+| `DATABASE_USER` | | |
+| `DATABASE_PASSWORD` | | |
+| `DATABASE_NAME` | | |
+| `PORT` | `3000` | |
+| `THROTTLE_TTL` | `60000` | Rate-limit window in ms |
+| `THROTTLE_LIMIT` | `10` | Max requests per window |
+| `ALLOWED_FORWARD` | | Token required by `x-internal-cron` header |
+| `TMDB_API_KEY` | | TMDB API key |
+| `ENABLE_CRON` | `false` | Enable scheduled cron jobs |
 
 > **`ENABLE_CRON=true` is recommended in production** to activate automatic daily updates.
 
