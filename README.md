@@ -16,6 +16,18 @@ Api endpoints :
 - `/api/programs/now`
 - `/api/programs/:day`
 
+Process endpoint (`x-internal-cron` header is required) : 
+
+- `/api/xml-tv/run` # run cron to update database
+- `/api/tmdb/init`  # handle new programs
+- `/api/tmdb/sync`. # Load details on tmdb api for current programs
+- `/api/tmdb/sync?title=<title>` # Load detaisl for a specific program
+
+## Features
+
+- Update programs and channels every day at 1 AM
+- Get program details (score, poster, etc) from TMDB
+
 ## Project setup
 
 For easy command you can use [Just](https://github.com/casey/just).
@@ -46,4 +58,3 @@ $ npm run start:prod
 npm run test
 npm run test:e2e
 ```
-

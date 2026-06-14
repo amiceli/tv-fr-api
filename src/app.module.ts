@@ -9,6 +9,10 @@ import { ChannelController } from './api/channel/channel.controller'
 import { ChannelService } from './api/channel/channel.service'
 import { ProgramController } from './api/program/program.controller'
 import { ProgramService } from './api/program/program.service'
+import { ProgramSubscriber } from './tmdb/entities/program-details-subscriber'
+import { TmdbDetails } from './tmdb/entities/tmdb-details.entity'
+import { TmdbController } from './tmdb/tmdb.controller'
+import { TmdbService } from './tmdb/tmdb.service'
 import { Channel } from './xml-tv/entities/channel.entity'
 import { Program } from './xml-tv/entities/program.entity'
 import { XmlTvModule } from './xml-tv/xml-tv.module'
@@ -29,10 +33,11 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
                 database: config.get<string>('DATABASE_NAME'),
                 autoLoadEntities: true,
                 synchronize: true,
+                subscribers: [ProgramSubscriber],
             }),
         }),
         XmlTvModule,
-        TypeOrmModule.forFeature([Channel, Program]),
+        TypeOrmModule.forFeature([Channel, Program, TmdbDetails]),
         ThrottlerModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
@@ -46,7 +51,7 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
             }),
         }),
     ],
-    controllers: [ApiController, ChannelController, ProgramController],
+    controllers: [ApiController, ChannelController, ProgramController, TmdbController],
     providers: [
         ApiService,
         ChannelService,
@@ -55,6 +60,7 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
         },
+        TmdbService,
     ],
 })
 export class AppModule {}
