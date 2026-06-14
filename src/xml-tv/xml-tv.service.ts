@@ -70,7 +70,9 @@ export class XmlTvService {
 
     public async addChannels(channels: Channel[]): Promise<Channel[]> {
         try {
-            const saved = await this.channelRepository.save(channels, { chunk: 500 })
+            const saved = await this.channelRepository.save(channels, {
+                chunk: 500,
+            })
 
             this.logger.log(`action=add_channels, status=success, count=${saved.length}`)
 
@@ -84,7 +86,9 @@ export class XmlTvService {
 
     public async addPrograms(programs: Program[]): Promise<Program[]> {
         try {
-            const saved = await this.programRepository.save(programs, { chunk: 500 })
+            const saved = await this.programRepository.save(programs, {
+                chunk: 500,
+            })
 
             this.logger.log(`action=add_programs, status=success, count=${saved.length}`)
 

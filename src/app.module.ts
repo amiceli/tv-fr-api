@@ -23,9 +23,15 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
         ConfigModule.forRoot({
             isGlobal: true,
         }),
-        ...(process.env.ENABLE_CRON === 'true' ? [ScheduleModule.forRoot()] : []),
+        ...(process.env.ENABLE_CRON === 'true'
+            ? [
+                  ScheduleModule.forRoot(),
+              ]
+            : []),
         TypeOrmModule.forRootAsync({
-            inject: [ConfigService],
+            inject: [
+                ConfigService,
+            ],
             useFactory: (config: ConfigService) => ({
                 type: 'postgres',
                 host: config.get<string>('DATABASE_HOST'),
@@ -35,13 +41,21 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
                 database: config.get<string>('DATABASE_NAME'),
                 autoLoadEntities: true,
                 synchronize: true,
-                subscribers: [ProgramSubscriber],
+                subscribers: [
+                    ProgramSubscriber,
+                ],
             }),
         }),
         XmlTvModule,
-        TypeOrmModule.forFeature([Channel, Program, TmdbDetails]),
+        TypeOrmModule.forFeature([
+            Channel,
+            Program,
+            TmdbDetails,
+        ]),
         ThrottlerModule.forRootAsync({
-            inject: [ConfigService],
+            inject: [
+                ConfigService,
+            ],
             useFactory: (config: ConfigService) => ({
                 throttlers: [
                     {
@@ -53,7 +67,12 @@ import { XmlTvModule } from './xml-tv/xml-tv.module'
             }),
         }),
     ],
-    controllers: [ApiController, ChannelController, ProgramController, TmdbController],
+    controllers: [
+        ApiController,
+        ChannelController,
+        ProgramController,
+        TmdbController,
+    ],
     providers: [
         ApiService,
         ChannelService,

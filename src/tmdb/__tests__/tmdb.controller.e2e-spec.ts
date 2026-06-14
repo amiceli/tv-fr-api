@@ -65,7 +65,11 @@ describe('TmdbController (e2e)', () => {
                 ],
             })
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save(
                 buildProgram({
                     title: 'current movie',
@@ -77,7 +81,11 @@ describe('TmdbController (e2e)', () => {
 
             await request(app.getHttpServer()).get('/api/tmdb/sync').expect(200)
 
-            const details = await tmdbDetailsRepository.findOne({ where: { title: 'current movie' } })
+            const details = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'current movie',
+                },
+            })
             expect(details).not.toBeNull()
             expect(Number(details?.tmdbId)).toBe(10)
             expect(details?.isMovie).toBe(true)
@@ -102,7 +110,11 @@ describe('TmdbController (e2e)', () => {
                 ],
             })
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save({
                 ...buildProgram({
                     title: 'current serie',
@@ -110,12 +122,18 @@ describe('TmdbController (e2e)', () => {
                     start: new Date(now - oneHour),
                     stop: new Date(now + oneHour),
                 }),
-                categories: ['Série'],
+                categories: [
+                    'Série',
+                ],
             })
 
             await request(app.getHttpServer()).get('/api/tmdb/sync').expect(200)
 
-            const details = await tmdbDetailsRepository.findOne({ where: { title: 'current serie' } })
+            const details = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'current serie',
+                },
+            })
             expect(details).not.toBeNull()
             expect(Number(details?.tmdbId)).toBe(20)
             expect(details?.isMovie).toBe(false)
@@ -139,7 +157,11 @@ describe('TmdbController (e2e)', () => {
                 ],
             })
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save(
                 buildProgram({
                     title: 'the godfather',
@@ -151,7 +173,11 @@ describe('TmdbController (e2e)', () => {
 
             await request(app.getHttpServer()).get('/api/tmdb/sync?title=the+godfather').expect(200)
 
-            const details = await tmdbDetailsRepository.findOne({ where: { title: 'the godfather' } })
+            const details = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'the godfather',
+                },
+            })
             expect(details).not.toBeNull()
             expect(Number(details?.tmdbId)).toBe(42)
             expect(details?.isMovie).toBe(true)
@@ -173,7 +199,11 @@ describe('TmdbController (e2e)', () => {
                 ],
             })
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save({
                 ...buildProgram({
                     title: 'the wire',
@@ -181,12 +211,18 @@ describe('TmdbController (e2e)', () => {
                     start: new Date(Date.now() - 60 * 60 * 1000),
                     stop: new Date(Date.now() + 60 * 60 * 1000),
                 }),
-                categories: ['Série'],
+                categories: [
+                    'Série',
+                ],
             })
 
             await request(app.getHttpServer()).get('/api/tmdb/sync?title=the+wire').expect(200)
 
-            const details = await tmdbDetailsRepository.findOne({ where: { title: 'the wire' } })
+            const details = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'the wire',
+                },
+            })
             expect(details).not.toBeNull()
             expect(Number(details?.tmdbId)).toBe(99)
             expect(details?.isMovie).toBe(false)
@@ -194,9 +230,15 @@ describe('TmdbController (e2e)', () => {
         })
 
         test('does not create TmdbDetails when no TMDB match is found', async () => {
-            vi.spyOn(MovieDb.prototype, 'searchMovie').mockResolvedValue({ results: [] })
+            vi.spyOn(MovieDb.prototype, 'searchMovie').mockResolvedValue({
+                results: [],
+            })
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save(
                 buildProgram({
                     title: 'unknown movie',
@@ -208,7 +250,11 @@ describe('TmdbController (e2e)', () => {
 
             await request(app.getHttpServer()).get('/api/tmdb/sync?title=unknown+movie').expect(200)
 
-            const details = await tmdbDetailsRepository.findOne({ where: { title: 'unknown movie' } })
+            const details = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'unknown movie',
+                },
+            })
             expect(details).toBeNull()
         })
     })
@@ -222,14 +268,20 @@ describe('TmdbController (e2e)', () => {
                 done = fn()
                 return done
             })
-            return { waitForDone: () => done }
+            return {
+                waitForDone: () => done,
+            }
         }
 
         test('creates a TmdbDetails entry for each program title in the database', async () => {
             const original = tmdbService.handleNewPrograms.bind(tmdbService)
             const { waitForDone } = awaitServiceCompletion(original)
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save([
                 buildProgram({
                     title: 'Movie A',
@@ -248,8 +300,16 @@ describe('TmdbController (e2e)', () => {
             await triggerInit()
             await waitForDone()
 
-            const detailsA = await tmdbDetailsRepository.findOne({ where: { title: 'Movie A' } })
-            const detailsB = await tmdbDetailsRepository.findOne({ where: { title: 'Movie B' } })
+            const detailsA = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'Movie A',
+                },
+            })
+            const detailsB = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'Movie B',
+                },
+            })
 
             expect(detailsA).not.toBeNull()
             expect(detailsA?.tmdbId).toBeNull()
@@ -261,7 +321,11 @@ describe('TmdbController (e2e)', () => {
             const original = tmdbService.handleNewPrograms.bind(tmdbService)
             const { waitForDone } = awaitServiceCompletion(original)
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save([
                 buildProgram({
                     title: 'Same Show',
@@ -280,7 +344,11 @@ describe('TmdbController (e2e)', () => {
             await triggerInit()
             await waitForDone()
 
-            const count = await tmdbDetailsRepository.count({ where: { title: 'Same Show' } })
+            const count = await tmdbDetailsRepository.count({
+                where: {
+                    title: 'Same Show',
+                },
+            })
             expect(count).toBe(1)
         })
 
@@ -288,7 +356,11 @@ describe('TmdbController (e2e)', () => {
             const original = tmdbService.handleNewPrograms.bind(tmdbService)
             const { waitForDone } = awaitServiceCompletion(original)
 
-            await channelRepository.save({ xmlId: 'test-channel', displayName: 'Test Channel', icon: null })
+            await channelRepository.save({
+                xmlId: 'test-channel',
+                displayName: 'Test Channel',
+                icon: null,
+            })
             await programRepository.save(
                 buildProgram({
                     title: 'Known Movie',
@@ -310,7 +382,11 @@ describe('TmdbController (e2e)', () => {
             await triggerInit()
             await waitForDone()
 
-            const details = await tmdbDetailsRepository.findOne({ where: { title: 'Known Movie' } })
+            const details = await tmdbDetailsRepository.findOne({
+                where: {
+                    title: 'Known Movie',
+                },
+            })
             expect(Number(details?.tmdbId)).toBe(42)
         })
     })

@@ -6,13 +6,23 @@ export class Channel {
     @PrimaryGeneratedColumn('uuid')
     public id: string
 
-    @Column({ type: 'varchar', nullable: false })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     public displayName: string
 
-    @Column({ type: 'varchar', nullable: false, unique: true })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+        unique: true,
+    })
     public xmlId: string
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
     public icon: string | null
 
     @OneToMany(

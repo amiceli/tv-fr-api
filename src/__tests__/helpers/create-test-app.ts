@@ -10,17 +10,28 @@ import { TmdbDetails } from '@/tmdb/entities/tmdb-details.entity'
 import { Channel } from '@/xml-tv/entities/channel.entity'
 import { Program } from '@/xml-tv/entities/program.entity'
 
-export const createTestApp = async (): Promise<{ app: INestApplication<App>; module: TestingModule }> => {
+export const createTestApp = async (): Promise<{
+    app: INestApplication<App>
+    module: TestingModule
+}> => {
     const module: TestingModule = await Test.createTestingModule({
-        imports: [AppModule],
+        imports: [
+            AppModule,
+        ],
     })
         .overrideProvider(getDataSourceToken())
         .useFactory({
-            inject: [TYPEORM_MODULE_OPTIONS],
+            inject: [
+                TYPEORM_MODULE_OPTIONS,
+            ],
             factory: (options: DataSourceOptions) =>
                 createPgMemDataSource({
                     ...options,
-                    entities: [Channel, Program, TmdbDetails],
+                    entities: [
+                        Channel,
+                        Program,
+                        TmdbDetails,
+                    ],
                 } as DataSourceOptions),
         })
         .compile()
@@ -30,5 +41,8 @@ export const createTestApp = async (): Promise<{ app: INestApplication<App>; mod
     app.setGlobalPrefix('api')
     await app.init()
 
-    return { app, module }
+    return {
+        app,
+        module,
+    }
 }

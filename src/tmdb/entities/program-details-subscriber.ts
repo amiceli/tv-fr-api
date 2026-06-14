@@ -2,7 +2,9 @@ import { EntitySubscriberInterface, EventSubscriber } from 'typeorm'
 import { Program } from '@/xml-tv/entities/program.entity'
 import { TmdbDetails } from './tmdb-details.entity'
 
-type ProgramWithDetails = Program & { details: TmdbDetails | null }
+type ProgramWithDetails = Program & {
+    details: TmdbDetails | null
+}
 
 @EventSubscriber()
 export class ProgramSubscriber implements EntitySubscriberInterface<Program> {
@@ -19,7 +21,9 @@ export class ProgramSubscriber implements EntitySubscriberInterface<Program> {
         }
 
         const details = await event.manager.getRepository(TmdbDetails).findOne({
-            where: { title: program.title },
+            where: {
+                title: program.title,
+            },
         })
 
         program.details = details ?? null

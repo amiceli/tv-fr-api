@@ -12,17 +12,30 @@ export class TmdbController {
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
     @Get('/init')
     @UseInterceptors(HeaderInterceptor)
-    @ApiOperation({ summary: 'Initialize TMDB details for all programs' })
-    @ApiOkResponse({ description: 'Initialization triggered' })
+    @ApiOperation({
+        summary: 'Initialize TMDB details for all programs',
+    })
+    @ApiOkResponse({
+        description: 'Initialization triggered',
+    })
     public handleNewPrograms() {
         this.tmdbService.handleNewPrograms()
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
     @Get(`/sync`)
-    @ApiOperation({ summary: 'Sync TMDB scores for current programs' })
-    @ApiQuery({ name: 'title', required: false, type: String, description: 'Filter by program title' })
-    @ApiOkResponse({ description: 'Sync completed' })
+    @ApiOperation({
+        summary: 'Sync TMDB scores for current programs',
+    })
+    @ApiQuery({
+        name: 'title',
+        required: false,
+        type: String,
+        description: 'Filter by program title',
+    })
+    @ApiOkResponse({
+        description: 'Sync completed',
+    })
     public async syncProgramScores(@Query('title') title?: string): Promise<void> {
         if (title) {
             await this.tmdbService.syncOneProgram(title)

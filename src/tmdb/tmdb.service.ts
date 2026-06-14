@@ -23,9 +23,17 @@ export class TmdbService {
     public async handleNewPrograms() {
         const rows = await this.programRepository
             .createQueryBuilder('program')
-            .select(['program.id AS id', 'program.title AS title'])
-            .distinctOn(['program.title'])
-            .getRawMany<{ id: string; title: string }>()
+            .select([
+                'program.id AS id',
+                'program.title AS title',
+            ])
+            .distinctOn([
+                'program.title',
+            ])
+            .getRawMany<{
+                id: string
+                title: string
+            }>()
 
         // const titles = rows.map((r) => r.title)
 
@@ -56,7 +64,9 @@ export class TmdbService {
     public async syncOneProgram(title: string): Promise<void> {
         try {
             const program = await this.programRepository.findOne({
-                where: { title },
+                where: {
+                    title,
+                },
             })
 
             if (!program) {
@@ -84,7 +94,9 @@ export class TmdbService {
             details.title = program.title
 
             await this.tmdbDetails.upsert(details, {
-                conflictPaths: ['title'],
+                conflictPaths: [
+                    'title',
+                ],
             })
 
             this.logger.log(`action=sync_program,title=${title},tmdb_id=${details.tmdbId},status=success`)
@@ -106,7 +118,9 @@ export class TmdbService {
             take: 30,
         })
 
-        const titles = [...new Set(nowPrograms.map((v) => v.title))]
+        const titles = [
+            ...new Set(nowPrograms.map((v) => v.title)),
+        ]
 
         this.logger.log(`action=sync_programs, count=${titles.length}`)
 
