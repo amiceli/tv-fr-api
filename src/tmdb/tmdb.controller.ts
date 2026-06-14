@@ -18,7 +18,7 @@ export class TmdbController {
         this.tmdbService.handleNewPrograms()
     }
 
-    // @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_MINUTE)
     @Get(`/sync`)
     @ApiOperation({ summary: 'Sync TMDB scores for current programs' })
     @ApiQuery({ name: 'title', required: false, type: String, description: 'Filter by program title' })
