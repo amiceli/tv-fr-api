@@ -37,3 +37,6 @@ tmdb_sync title="":
         curl -X GET "http://localhost:3000/api/tmdb/sync" \
             -H "x-internal-cron: tv-api"; \
     fi
+
+fx endpoint="/api/status":
+    curl "http://localhost:3000{{endpoint}}" | fx
