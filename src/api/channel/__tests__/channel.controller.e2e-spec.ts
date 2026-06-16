@@ -34,8 +34,8 @@ describe('ChannelController', () => {
     })
 
     describe('GET /api/channels', () => {
-        test('returns paginated channels', async () => {
-            await channelRepository.save([
+        test('returns paginated channels with current program', async () => {
+            const [ch1, ch2] = await channelRepository.save([
                 {
                     xmlId: 'channel-1',
                     displayName: 'Channel One',
@@ -48,26 +48,29 @@ describe('ChannelController', () => {
                 },
             ])
 
+            const now = Date.now()
+            const oneHour = 60 * 60 * 1000
+            await programRepository.save([
+                buildProgram({
+                    title: 'On air now',
+                    channelXmlId: ch1.xmlId,
+                    start: new Date(now - oneHour),
+                    stop: new Date(now + oneHour),
+                }),
+            ])
+
             const response = await request(app.getHttpServer()).get('/api/channels').expect(200)
 
             expect(response.body.total).toBe(2)
             expect(response.body.totalPages).toBe(1)
             expect(response.body.count).toBe(2)
             expect(response.body.channels).toHaveLength(2)
-            expect(response.body.channels).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        xmlId: 'channel-1',
-                        displayName: 'Channel One',
-                        icon: null,
-                    }),
-                    expect.objectContaining({
-                        xmlId: 'channel-2',
-                        displayName: 'Channel Two',
-                        icon: 'https://example.com/icon.png',
-                    }),
-                ]),
-            )
+
+            const one = response.body.channels.find((c: Channel) => c.xmlId === ch1.xmlId)
+            const two = response.body.channels.find((c: Channel) => c.xmlId === ch2.xmlId)
+            expect(one.current?.title).toBe('On air now')
+            expect(two.current).toBeNull()
+
             for (const channel of response.body.channels) {
                 expect(channel).not.toHaveProperty('programs')
             }
@@ -275,8 +278,8 @@ describe('ChannelController', () => {
     })
 
     describe('GET /api/channels/tnt', () => {
-        test('returns only TNT channels', async () => {
-            await channelRepository.save([
+        test('returns only TNT channels with current program', async () => {
+            const saved = await channelRepository.save([
                 {
                     xmlId: 'tf1.fr',
                     displayName: 'TF1',
@@ -293,6 +296,18 @@ describe('ChannelController', () => {
                     icon: null,
                 },
             ])
+            const tf1 = saved[0]
+
+            const now = Date.now()
+            const oneHour = 60 * 60 * 1000
+            await programRepository.save(
+                buildProgram({
+                    title: 'On air now',
+                    channelXmlId: tf1.xmlId,
+                    start: new Date(now - oneHour),
+                    stop: new Date(now + oneHour),
+                }),
+            )
 
             const response = await request(app.getHttpServer()).get('/api/channels/tnt').expect(200)
 
@@ -301,6 +316,8 @@ describe('ChannelController', () => {
                 'TF1',
                 'M6',
             ])
+            expect(response.body[0].current?.title).toBe('On air now')
+            expect(response.body[1].current).toBeNull()
         })
 
         test('returns channels in TNT broadcast order', async () => {

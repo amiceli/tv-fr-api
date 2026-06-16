@@ -2,10 +2,17 @@ import { TZDate } from '@date-fns/tz'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { And, ILike, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm'
-import { Channel } from '../../xml-tv/entities/channel.entity'
-import { Program } from '../../xml-tv/entities/program.entity'
-import { UUID_REGEX } from '../types'
-import { ChannelDetailsResponse, GetChannelDetailsQuery, ListChannelsQuery, ListChannelsResult, SearchChannelsQuery } from './types'
+import {
+    ChannelDetailsResponse,
+    ChannelWithCurrent,
+    GetChannelDetailsQuery,
+    ListChannelsQuery,
+    ListChannelsResult,
+    SearchChannelsQuery,
+} from '@/api/channel/types'
+import { UUID_REGEX } from '@/api/types'
+import { Channel } from '@/xml-tv/entities/channel.entity'
+import { Program } from '@/xml-tv/entities/program.entity'
 
 const TNT_CHANNELS = [
     'TF1',
@@ -55,7 +62,7 @@ export class ChannelService {
         })
 
         return {
-            channels,
+            channels: await this.getChannelCurrentPrograms(channels),
             total,
             totalPages: Math.ceil(total / query.limit),
             count: channels.length,
@@ -84,12 +91,14 @@ export class ChannelService {
         }
     }
 
-    public async tntChannels(): Promise<Channel[]> {
+    public async tntChannels(): Promise<ChannelWithCurrent[]> {
         const channels = await this.channelRepository.findBy({
             displayName: In(TNT_CHANNELS),
         })
 
-        return channels.sort((a, b) => TNT_CHANNELS.indexOf(a.displayName) - TNT_CHANNELS.indexOf(b.displayName))
+        const sorted = channels.sort((a, b) => TNT_CHANNELS.indexOf(a.displayName) - TNT_CHANNELS.indexOf(b.displayName))
+
+        return this.getChannelCurrentPrograms(sorted)
     }
 
     public async getChannelDetails(query: GetChannelDetailsQuery): Promise<ChannelDetailsResponse> {
@@ -128,6 +137,31 @@ export class ChannelService {
             currentProgram,
             dayPrograms,
         }
+    }
+
+    private async getChannelCurrentPrograms(channels: Channel[]): Promise<ChannelWithCurrent[]> {
+        if (channels.length === 0) return []
+
+        const now = new Date()
+        const currentPrograms = await this.programRepository.find({
+            where: {
+                channelXmlId: In(channels.map((c) => c.xmlId)),
+                startAt: LessThanOrEqual(now),
+                stopAt: MoreThan(now),
+            },
+        })
+
+        const byXmlId = new Map(
+            currentPrograms.map((p) => [
+                p.channelXmlId,
+                p,
+            ]),
+        )
+
+        return channels.map((channel) => ({
+            ...channel,
+            current: byXmlId.get(channel.xmlId) ?? null,
+        }))
     }
 
     private async findChannel(channelId: string): Promise<Channel> {
