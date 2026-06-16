@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { MovieDb, MovieResult, TvResult } from 'moviedb-promise'
-import { In, LessThanOrEqual, MoreThanOrEqual, Not, Repository } from 'typeorm'
+import { In, IsNull, LessThan, LessThanOrEqual, MoreThanOrEqual, Not, Repository } from 'typeorm'
 import { TNT_CHANNELS } from '@/api/channel/channel.service'
 import { ProgramService } from '@/api/program/program.service'
 import { MediaType } from '@/tmdb/entities/media-type.enum'
@@ -111,6 +111,15 @@ export class TmdbService {
             if (!result?.id || !mediaType) {
                 this.logger.log(`action=sync_program, title=${title}, status=not_found`)
 
+                await this.tmdbDetails.update(
+                    {
+                        title,
+                    },
+                    {
+                        tmdbSyncAt: new Date(),
+                    },
+                )
+
                 return
             }
 
@@ -122,10 +131,20 @@ export class TmdbService {
             if (!details.tmdbId) {
                 this.logger.log(`action=sync_program, title=${title}, status=invalid_tmdb_id`)
 
+                await this.tmdbDetails.update(
+                    {
+                        title,
+                    },
+                    {
+                        tmdbSyncAt: new Date(),
+                    },
+                )
+
                 return
             }
 
             details.title = program.title
+            details.tmdbSyncAt = new Date()
 
             await this.tmdbDetails.upsert(details, {
                 conflictPaths: [
@@ -141,6 +160,8 @@ export class TmdbService {
 
     public async syncTntPrograms() {
         const now = new Date()
+        const oneMonthAgo = new Date()
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
 
         const programs = await this.programRepository.find({
             where: {
@@ -159,17 +180,34 @@ export class TmdbService {
             ...new Set(programs.map((v) => v.title)),
         ]
 
-        this.logger.log(`action=sync_tnt_programs, count=${titles.length}`)
+        const detailsToSync = await this.tmdbDetails.find({
+            where: [
+                {
+                    title: In(titles),
+                    tmdbSyncAt: IsNull(),
+                },
+                {
+                    title: In(titles),
+                    tmdbSyncAt: LessThan(oneMonthAgo),
+                },
+            ],
+        })
 
-        if (titles.length > 0) {
-            await Promise.all(titles.map((t) => this.syncOneProgram(t)))
+        const titlesToSync = detailsToSync.map((d) => d.title)
+
+        this.logger.log(`action=sync_tnt_programs, count=${titlesToSync.length}`)
+
+        if (titlesToSync.length > 0) {
+            await Promise.all(titlesToSync.map((t) => this.syncOneProgram(t)))
         }
 
-        this.logger.log(`action=sync_tnt_programs, count=${titles.length}, status=finished`)
+        this.logger.log(`action=sync_tnt_programs, count=${titlesToSync.length}, status=finished`)
     }
 
     public async syncOtherPrograms() {
         const now = new Date()
+        const oneMonthAgo = new Date()
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
 
         const programs = await this.programRepository.find({
             where: {
@@ -189,13 +227,28 @@ export class TmdbService {
             ...new Set(programs.map((v) => v.title)),
         ]
 
-        this.logger.log(`action=sync_other_programs, count=${titles.length}`)
+        const detailsToSync = await this.tmdbDetails.find({
+            where: [
+                {
+                    title: In(titles),
+                    tmdbSyncAt: IsNull(),
+                },
+                {
+                    title: In(titles),
+                    tmdbSyncAt: LessThan(oneMonthAgo),
+                },
+            ],
+        })
 
-        if (titles.length > 0) {
-            await Promise.all(titles.map((t) => this.syncOneProgram(t)))
+        const titlesToSync = detailsToSync.map((d) => d.title)
+
+        this.logger.log(`action=sync_other_programs, count=${titlesToSync.length}`)
+
+        if (titlesToSync.length > 0) {
+            await Promise.all(titlesToSync.map((t) => this.syncOneProgram(t)))
         }
 
-        this.logger.log(`action=sync_other_programs, count=${titles.length}, status=finished`)
+        this.logger.log(`action=sync_other_programs, count=${titlesToSync.length}, status=finished`)
     }
 
     // tmdb api

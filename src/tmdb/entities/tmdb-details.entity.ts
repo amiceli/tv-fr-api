@@ -72,6 +72,13 @@ export class TmdbDetails {
     })
     public searxngSearchedAt: Date | null
 
+    @Column({
+        type: 'timestamptz',
+        nullable: true,
+        default: null,
+    })
+    public tmdbSyncAt: Date | null
+
     public tmdbUrl: string | null
 
     @AfterLoad()
