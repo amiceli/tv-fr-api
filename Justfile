@@ -40,9 +40,15 @@ sync title="":
             -H "x-internal-cron: tv-api"; \
     fi
 
-sear:
-    curl -X GET "http://localhost:3000/api/searxng/sync" \
-        -H "x-internal-cron: tv-api"
+sear title="":
+    if [ -n "{{title}}" ]; then \
+        curl -G "http://localhost:3000/api/searxng/sync" \
+            -H "x-internal-cron: tv-api" \
+            --data-urlencode "title={{title}}"; \
+    else \
+        curl -X GET "http://localhost:3000/api/searxng/sync" \
+            -H "x-internal-cron: tv-api"; \
+    fi
 
 fx endpoint="/api/status":
     curl "http://localhost:3000{{endpoint}}" | fx

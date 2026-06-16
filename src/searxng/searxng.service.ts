@@ -23,6 +23,21 @@ export class SearxngService {
 
     private readonly logger = new Logger(SearxngService.name)
 
+    public async syncOnePoster(title: string): Promise<void> {
+        const details = await this.tmdbDetails.findOne({
+            where: {
+                title,
+            },
+        })
+
+        if (!details) {
+            this.logger.error(`action=sync_one_poster, status=failed, reason=not_found, title=${title}`)
+            return
+        }
+
+        await this.searchPoster(details)
+    }
+
     public async syncPosters(): Promise<void> {
         const oneMonthAgo = new Date()
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)

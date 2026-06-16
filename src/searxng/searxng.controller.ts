@@ -1,6 +1,6 @@
-import { Controller, Get, UseInterceptors } from '@nestjs/common'
+import { Controller, Get, Query, UseInterceptors } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { HeaderInterceptor } from '@/xml-tv/xml-tv.interceptor'
 import { SearxngService } from './searxng.service'
 
@@ -15,10 +15,20 @@ export class SearxngController {
     @ApiOperation({
         summary: 'Sync poster images from SearXNG for programs without poster',
     })
+    @ApiQuery({
+        name: 'title',
+        required: false,
+        type: String,
+        description: 'Filter by program title',
+    })
     @ApiOkResponse({
         description: 'Sync triggered',
     })
-    public syncPosters(): void {
-        this.searxngService.syncPosters()
+    public async syncPosters(@Query('title') title?: string): Promise<void> {
+        if (title) {
+            await this.searxngService.syncOnePoster(title)
+        } else {
+            this.searxngService.syncPosters()
+        }
     }
 }
