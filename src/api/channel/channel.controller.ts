@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
-import type { Channel } from '../../xml-tv/entities/channel.entity'
+import { Channel } from '../../xml-tv/entities/channel.entity'
 import { ApiQueryDetails } from '../api.swagger'
 import { type PaginationQuery, SortQuery } from '../types'
 import { ChannelService } from './channel.service'
@@ -98,6 +98,19 @@ export class ChannelController {
             channels,
             rest,
         })
+    }
+
+    @Get('channels/tnt')
+    @ApiOperation({
+        summary: 'List TNT free channels in broadcast order',
+    })
+    @ApiOkResponse({
+        description: 'TNT channels in order',
+        type: Channel,
+        isArray: true,
+    })
+    public async tntChannels(): Promise<Channel[]> {
+        return this.channelService.tntChannels()
     }
 
     @Get('channels/:id')

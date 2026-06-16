@@ -273,4 +273,82 @@ describe('ChannelController', () => {
             return request(app.getHttpServer()).get('/api/channels/unknown.fr').expect(404)
         })
     })
+
+    describe('GET /api/channels/tnt', () => {
+        test('returns only TNT channels', async () => {
+            await channelRepository.save([
+                {
+                    xmlId: 'tf1.fr',
+                    displayName: 'TF1',
+                    icon: null,
+                },
+                {
+                    xmlId: 'm6.fr',
+                    displayName: 'M6',
+                    icon: null,
+                },
+                {
+                    xmlId: 'other.fr',
+                    displayName: 'Other Channel',
+                    icon: null,
+                },
+            ])
+
+            const response = await request(app.getHttpServer()).get('/api/channels/tnt').expect(200)
+
+            expect(response.body).toHaveLength(2)
+            expect(response.body.map((c: Channel) => c.displayName)).toEqual([
+                'TF1',
+                'M6',
+            ])
+        })
+
+        test('returns channels in TNT broadcast order', async () => {
+            await channelRepository.save([
+                {
+                    xmlId: 'w9.fr',
+                    displayName: 'W9',
+                    icon: null,
+                },
+                {
+                    xmlId: 'france2.fr',
+                    displayName: 'France 2',
+                    icon: null,
+                },
+                {
+                    xmlId: 'tf1.fr',
+                    displayName: 'TF1',
+                    icon: null,
+                },
+                {
+                    xmlId: 'm6.fr',
+                    displayName: 'M6',
+                    icon: null,
+                },
+            ])
+
+            const response = await request(app.getHttpServer()).get('/api/channels/tnt').expect(200)
+
+            expect(response.body.map((c: Channel) => c.displayName)).toEqual([
+                'TF1',
+                'France 2',
+                'M6',
+                'W9',
+            ])
+        })
+
+        test('returns empty array when no TNT channels exist', async () => {
+            await channelRepository.save([
+                {
+                    xmlId: 'other.fr',
+                    displayName: 'Other Channel',
+                    icon: null,
+                },
+            ])
+
+            const response = await request(app.getHttpServer()).get('/api/channels/tnt').expect(200)
+
+            expect(response.body).toEqual([])
+        })
+    })
 })

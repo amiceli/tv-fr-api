@@ -1,11 +1,40 @@
 import { TZDate } from '@date-fns/tz'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { And, ILike, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm'
+import { And, ILike, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm'
 import { Channel } from '../../xml-tv/entities/channel.entity'
 import { Program } from '../../xml-tv/entities/program.entity'
 import { UUID_REGEX } from '../types'
 import { ChannelDetailsResponse, GetChannelDetailsQuery, ListChannelsQuery, ListChannelsResult, SearchChannelsQuery } from './types'
+
+const TNT_CHANNELS = [
+    'TF1',
+    'France 2',
+    'France 3',
+    'France 4',
+    'France 5',
+    'M6',
+    'Arte',
+    'LCP',
+    'W9',
+    'TMC',
+    'TFX',
+    'Gulli',
+    'BFM TV',
+    'CNEWS',
+    'LCI',
+    'Franceinfo',
+    'CSTAR',
+    'T18',
+    'NOVO19',
+    'TF1 Séries Films',
+    "L'Équipe",
+    '6ter',
+    'RMC Story',
+    'RMC Découverte',
+    'Chérie 25',
+    'Paris Première',
+]
 
 @Injectable()
 export class ChannelService {
@@ -53,6 +82,14 @@ export class ChannelService {
             count: channels.length,
             limit: query.limit,
         }
+    }
+
+    public async tntChannels(): Promise<Channel[]> {
+        const channels = await this.channelRepository.findBy({
+            displayName: In(TNT_CHANNELS),
+        })
+
+        return channels.sort((a, b) => TNT_CHANNELS.indexOf(a.displayName) - TNT_CHANNELS.indexOf(b.displayName))
     }
 
     public async getChannelDetails(query: GetChannelDetailsQuery): Promise<ChannelDetailsResponse> {
