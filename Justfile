@@ -13,6 +13,9 @@ start:
 stop:
     docker compose stop
 
+restart:
+    docker compose -f docker-compose.dev.yml restart
+
 tests:
     npm run test
     npm run test:e2e
@@ -53,6 +56,7 @@ sear title="":
 
 do title="":
     just sync "{{title}}"
+    echo ""
     just sear "{{title}}"
     
 fx endpoint="/api/status":
