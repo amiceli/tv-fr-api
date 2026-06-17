@@ -79,6 +79,9 @@ describe('TmdbController (e2e)', () => {
                     stop: new Date(now + oneHour),
                 }),
             )
+            await tmdbDetailsRepository.save({
+                title: 'current movie',
+            })
 
             await request(app.getHttpServer()).get('/api/tmdb/sync').expect(200)
 
@@ -127,6 +130,9 @@ describe('TmdbController (e2e)', () => {
                     stop: new Date(now + oneHour),
                 }),
             )
+            await tmdbDetailsRepository.save({
+                title: 'current serie',
+            })
 
             await request(app.getHttpServer()).get('/api/tmdb/sync').expect(200)
 
@@ -399,6 +405,14 @@ describe('TmdbController (e2e)', () => {
                     start: new Date(now - oneHour),
                     stop: new Date(now + oneHour),
                 }),
+            ])
+            await tmdbDetailsRepository.save([
+                {
+                    title: 'tnt show',
+                },
+                {
+                    title: 'other show',
+                },
             ])
         })
 

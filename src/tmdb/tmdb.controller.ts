@@ -37,13 +37,15 @@ export class TmdbController {
         description: 'Sync completed',
     })
     @HttpCode(HttpStatus.OK)
-    public syncProgramScores(@Query('title') title?: string) {
+    public async syncProgramScores(@Query('title') title?: string) {
         try {
             if (title) {
-                this.tmdbService.syncOneProgram(title)
+                await this.tmdbService.syncOneProgram(title)
             } else {
-                this.tmdbService.syncTntPrograms()
-                this.tmdbService.syncOtherPrograms()
+                await Promise.all([
+                    this.tmdbService.syncTntPrograms(),
+                    this.tmdbService.syncOtherPrograms(),
+                ])
             }
 
             return {
