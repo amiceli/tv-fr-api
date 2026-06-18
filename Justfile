@@ -64,3 +64,47 @@ fx endpoint="/api/status":
 
 adminer:
     open "http://localhost:8080/?pgsql=${DATABASE_HOST:-tv-api-db}&username=${DATABASE_USER:-tvfr}&db=${DATABASE_NAME:-tvfr}"
+
+sdk-js version:
+    docker run --rm \
+        -v ${PWD}:/local \
+        openapitools/openapi-generator-cli generate \
+        -i /local/openapi.json \
+        -g typescript-fetch \
+        -o /local/sdk/js \
+        --additional-properties npmName=@amiceli/tv-fr-api,npmVersion={{version}}
+    sed -i '' 's/"description": ".*"/"description": "Lib to use the tv-fr API based on xml-tv-fr"/' sdk/js/package.json
+    sed -i '' 's/"author": ".*"/"author": "amiceli"/' sdk/js/package.json
+
+sdk-php version:
+    docker run --rm \
+        -v ${PWD}:/local \
+        openapitools/openapi-generator-cli generate \
+        -i /local/openapi.json \
+        -g php \
+        -o /local/sdk/php \
+        --additional-properties invokerPackage=Amiceli\\TvFrApi,composerPackageName=amiceli/tv-fr-api,packageVersion={{version}}
+    sed -i '' 's/"description": ".*"/"description": "Lib to use the tv-fr API based on xml-tv-fr"/' sdk/php/composer.json
+    sed -i '' 's/"name": "OpenAPI"/"name": "amiceli"/' sdk/php/composer.json
+
+publish-js version:
+    just sdk-js {{version}}
+    cd sdk/js && npm publish
+    sed -i '' 's/"js": ".*"/"js": "{{version}}"/' sdk-version.json
+
+publish-php version:
+    just sdk-php {{version}}
+    cd sdk/php && bash git_push.sh amiceli tv-fr-api-php "Release {{version}}"
+    cd sdk/php && git tag {{version}} && git push origin {{version}}
+    sed -i '' 's/"php": ".*"/"php": "{{version}}"/' sdk-version.json
+
+publish-js-beta version:
+    just sdk-js {{version}}
+    cd sdk/js && npm publish --tag beta
+    sed -i '' 's/"js_beta": ".*"/"js_beta": "{{version}}"/' sdk-version.json
+
+publish-php-beta version:
+    just sdk-php {{version}}
+    cd sdk/php && bash git_push.sh amiceli tv-fr-api-php "Beta release {{version}}"
+    cd sdk/php && git tag {{version}} && git push origin {{version}}
+    sed -i '' 's/"php_beta": ".*"/"php_beta": "{{version}}"/' sdk-version.json
