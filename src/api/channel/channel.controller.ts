@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common'
-import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { Controller, Get, HttpStatus, Param, Query, Req } from '@nestjs/common'
+import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import { ApiQueryDetails } from '@/api/api.swagger'
 import { ChannelService } from '@/api/channel/channel.service'
@@ -26,6 +26,10 @@ type PaginatedResponseOptions = {
 }
 
 @ApiTags('Channels')
+@ApiResponse({
+    status: HttpStatus.TOO_MANY_REQUESTS,
+    description: 'Rate limit exceeded',
+})
 @Controller()
 export class ChannelController {
     public constructor(private readonly channelService: ChannelService) {}
@@ -136,6 +140,10 @@ export class ChannelController {
     })
     @ApiOkResponse({
         description: 'Channel with current and daily programs',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Channel not found',
     })
     public async channelDetails(@Param('id') channelId: string, @Query('day') programDay?: string): Promise<ChannelDetailsResponse> {
         return this.channelService.getChannelDetails({

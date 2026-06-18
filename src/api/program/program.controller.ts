@@ -1,5 +1,5 @@
-import { BadRequestException, Controller, Get, Param, Query } from '@nestjs/common'
-import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { BadRequestException, Controller, Get, HttpStatus, Param, Query } from '@nestjs/common'
+import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { isValid } from 'date-fns'
 import { ApiQueryDetails } from '../api.swagger'
 import { type PaginationQuery, SortQuery } from '../types'
@@ -14,6 +14,10 @@ type ParsedPagination = {
 }
 
 @ApiTags('Programs')
+@ApiResponse({
+    status: HttpStatus.TOO_MANY_REQUESTS,
+    description: 'Rate limit exceeded',
+})
 @Controller()
 export class ProgramController {
     public constructor(private readonly programService: ProgramService) {}
@@ -29,6 +33,10 @@ export class ProgramController {
     })
     @ApiOkResponse({
         description: 'Program details',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Program not found',
     })
     public async program(@Param('id') programId: string) {
         return this.programService.getProgramById(programId)
@@ -81,6 +89,10 @@ export class ProgramController {
     @ApiQuery(ApiQueryDetails.limit)
     @ApiOkResponse({
         description: 'Paginated list of programs for the day',
+    })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description: 'Invalid date format',
     })
     public async getDayPrograms(
         @Param('day') dayStr: string,
