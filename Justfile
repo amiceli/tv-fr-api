@@ -72,6 +72,7 @@ sdk-js version:
         -i /local/openapi.json \
         -g typescript-fetch \
         -o /local/sdk/js \
+        -t /local/.openapi-templates/typescript-fetch \
         --additional-properties npmName=@amiceli/tv-fr-api,npmVersion={{version}}
     sed -i '' 's/"description": ".*"/"description": "Lib to use the tv-fr API based on xml-tv-fr"/' sdk/js/package.json
     sed -i '' 's/"author": ".*"/"author": "amiceli"/' sdk/js/package.json
@@ -83,6 +84,7 @@ sdk-php version:
         -i /local/openapi.json \
         -g php \
         -o /local/sdk/php \
+        -t /local/.openapi-templates/php \
         --additional-properties invokerPackage=Amiceli\\TvFrApi,composerPackageName=amiceli/tv-fr-api,packageVersion={{version}}
     sed -i '' 's/"description": ".*"/"description": "Lib to use the tv-fr API based on xml-tv-fr"/' sdk/php/composer.json
     sed -i '' 's/"name": "OpenAPI"/"name": "amiceli"/' sdk/php/composer.json
