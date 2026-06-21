@@ -77,21 +77,15 @@ npm install @amiceli/tv-fr-api
 ### PHP
 
 ```bash
-composer require amiceli/tv-fr-api
+composer require piccoli-occhi/tv-fr-api-php
 ```
 
 ```php
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$api = new Amiceli\TvFrApi\Api\ChannelsApi(new GuzzleHttp\Client());
+$api = new PiccoliOcchi\TvFrApi\Api\ChannelsApi(new GuzzleHttp\Client());
 $channels = $api->getTntChannels();
-```
-
-Beta versions use a `-beta.x` suffix and follow Composer's stability flags:
-
-```bash
-composer require amiceli/tv-fr-api:1.2.0-beta.1
 ```
 
 ## Features
