@@ -1,5 +1,6 @@
 import type { ChannelSummary } from '@/api/channel/types'
 import { PaginatedResponse, SortQuery } from '@/api/types'
+import type { TmdbDetails } from '@/tmdb/entities/tmdb-details.entity'
 
 export type ListProgramsQuery = {
     page: number
@@ -35,6 +36,7 @@ export class ProgramSummary {
     public categories: string[]
     public credits: string[]
     public channelXmlId: string
+    public details: TmdbDetails | null
 }
 
 export class ProgramWithChannel extends ProgramSummary {
