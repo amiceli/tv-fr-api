@@ -83,7 +83,7 @@ export class TmdbDetails {
 
     @AfterLoad()
     public buildTmdbUrl() {
-        if (!this.tmdbId || !this.originalName) {
+        if (!this.tmdbId || !this.originalName || !this.mediaType) {
             this.tmdbUrl = null
             return
         }

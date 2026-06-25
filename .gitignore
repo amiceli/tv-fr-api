@@ -59,3 +59,4 @@ xmltv.xml
 
 # generated SDKs (published, not versioned here)
 /sdk
+Justfile.prod
