@@ -178,6 +178,6 @@ export class ChannelController {
     }
 
     private getBaseUrl(req: Request): string {
-        return `${req.protocol}://${req.get('Host')}/api/channels`
+        return `${req.protocol}://${req.get('Host')}/api/channel`
     }
 }

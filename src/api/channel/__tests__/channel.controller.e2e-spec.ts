@@ -118,6 +118,26 @@ describe('ChannelController', () => {
             expect(response.body.channels[0].displayName).toBe('Beta')
             expect(response.body.channels[1].displayName).toBe('Alpha')
         })
+
+        test('returns correct urls with /api/channel prefix', async () => {
+            const channel = await channelRepository.save({
+                xmlId: 'tf1.fr',
+                displayName: 'TF1',
+                icon: null,
+            })
+
+            const response = await request(app.getHttpServer()).get('/api/channels').expect(200)
+
+            expect(response.body.channels).toHaveLength(1)
+            const urls = response.body.channels[0].urls
+            expect(urls).toHaveLength(2)
+            expect(urls[0]).toContain('/api/channel/')
+            expect(urls[0]).toContain(channel.xmlId)
+            expect(urls[1]).toContain('/api/channel/')
+            expect(urls[1]).toContain(channel.id)
+            expect(urls[0]).not.toContain('/api/channels/')
+            expect(urls[1]).not.toContain('/api/channels/')
+        })
     })
 
     describe('GET /api/channels/search', () => {
@@ -161,6 +181,26 @@ describe('ChannelController', () => {
 
             expect(response.body.total).toBe(0)
             expect(response.body.channels).toHaveLength(0)
+        })
+
+        test('returns correct urls with /api/channel prefix in search results', async () => {
+            const channel = await channelRepository.save({
+                xmlId: 'tf1.fr',
+                displayName: 'TF1',
+                icon: null,
+            })
+
+            const response = await request(app.getHttpServer()).get('/api/channels/search?q=TF1').expect(200)
+
+            expect(response.body.channels).toHaveLength(1)
+            const urls = response.body.channels[0].urls
+            expect(urls).toHaveLength(2)
+            expect(urls[0]).toContain('/api/channel/')
+            expect(urls[0]).toContain(channel.xmlId)
+            expect(urls[1]).toContain('/api/channel/')
+            expect(urls[1]).toContain(channel.id)
+            expect(urls[0]).not.toContain('/api/channels/')
+            expect(urls[1]).not.toContain('/api/channels/')
         })
     })
 
