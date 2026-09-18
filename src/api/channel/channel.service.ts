@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { And, ILike, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm'
 import {
     ChannelDetailsResponse,
+    ChannelSummary,
     ChannelWithCurrent,
     GetChannelDetailsQuery,
     ListChannelsQuery,
@@ -100,6 +101,14 @@ export class ChannelService {
         const sorted = channels.sort((a, b) => TNT_CHANNELS.indexOf(a.displayName) - TNT_CHANNELS.indexOf(b.displayName))
 
         return this.getChannelsWithPrograms(sorted)
+    }
+
+    public async allChannels(): Promise<ChannelSummary[]> {
+        return this.channelRepository.find({
+            order: {
+                displayName: 'ASC',
+            },
+        })
     }
 
     public async getChannelDetails(query: GetChannelDetailsQuery): Promise<ChannelDetailsResponse> {

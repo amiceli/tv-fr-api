@@ -317,6 +317,102 @@ describe('ChannelController', () => {
         })
     })
 
+    describe('GET /api/channels/all', () => {
+        test('returns all channels without pagination', async () => {
+            await channelRepository.save([
+                {
+                    xmlId: 'channel-1',
+                    displayName: 'Channel One',
+                    icon: null,
+                },
+                {
+                    xmlId: 'channel-2',
+                    displayName: 'Channel Two',
+                    icon: 'https://example.com/icon.png',
+                },
+                {
+                    xmlId: 'channel-3',
+                    displayName: 'Channel Three',
+                    icon: null,
+                },
+            ])
+
+            const response = await request(app.getHttpServer()).get('/api/channels/all').expect(200)
+
+            expect(response.body).toHaveLength(3)
+            expect(response.body[0]).toEqual(
+                expect.objectContaining({
+                    xmlId: 'channel-1',
+                    displayName: 'Channel One',
+                    icon: null,
+                }),
+            )
+            expect(response.body[1]).toEqual(
+                expect.objectContaining({
+                    xmlId: 'channel-3',
+                    displayName: 'Channel Three',
+                    icon: null,
+                }),
+            )
+            expect(response.body[2]).toEqual(
+                expect.objectContaining({
+                    xmlId: 'channel-2',
+                    displayName: 'Channel Two',
+                    icon: 'https://example.com/icon.png',
+                }),
+            )
+        })
+
+        test('returns channels sorted by displayName', async () => {
+            await channelRepository.save([
+                {
+                    xmlId: 'z-channel',
+                    displayName: 'Zulu',
+                    icon: null,
+                },
+                {
+                    xmlId: 'a-channel',
+                    displayName: 'Alpha',
+                    icon: null,
+                },
+                {
+                    xmlId: 'm-channel',
+                    displayName: 'Mike',
+                    icon: null,
+                },
+            ])
+
+            const response = await request(app.getHttpServer()).get('/api/channels/all').expect(200)
+
+            const names = response.body.map((c: Channel) => c.displayName)
+            expect(names).toEqual([
+                'Alpha',
+                'Mike',
+                'Zulu',
+            ])
+        })
+
+        test('returns channels without current and urls properties', async () => {
+            await channelRepository.save([
+                {
+                    xmlId: 'test.fr',
+                    displayName: 'Test Channel',
+                    icon: 'https://example.com/icon.png',
+                },
+            ])
+
+            const response = await request(app.getHttpServer()).get('/api/channels/all').expect(200)
+
+            expect(response.body[0]).toEqual(
+                expect.objectContaining({
+                    xmlId: 'test.fr',
+                    displayName: 'Test Channel',
+                    icon: 'https://example.com/icon.png',
+                }),
+            )
+        })
+    })
+
     describe('GET /api/channels/tnt', () => {
         test('returns only TNT channels with current program', async () => {
             const saved = await channelRepository.save([

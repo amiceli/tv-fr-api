@@ -2,14 +2,6 @@
 
 Provides api based on [XML-TV-Fr](https://github.com/racacax/XML-TV-Fr).
 
-## Endpoints
-
-Projets provides docs with [swagger](https://tv-api.miceli.click/api/docs).
-
-You can test endpoints on [https://tv-api.miceli.click](https://tv-api.miceli.click/api/docs) (with rate-limit).
-
-This API is used in [tv-fr-web](https://github.com/piccoli-occhi/tv-fr-web) project.
-
 ### Data endpoints
 
 | Endpoint | Description |

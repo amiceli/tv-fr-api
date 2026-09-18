@@ -6,6 +6,7 @@ import { ChannelService } from '@/api/channel/channel.service'
 import {
     ChannelDetailsResponse,
     ChannelSortField,
+    ChannelSummary,
     ChannelWithCurrent,
     PaginatedChannelsResponse,
     SearchChannelsQuery,
@@ -122,6 +123,19 @@ export class ChannelController {
     })
     public async getTntChannels(): Promise<ChannelWithCurrent[]> {
         return this.channelService.tntChannels()
+    }
+
+    @Get('channels/all')
+    @ApiOperation({
+        summary: 'List all channels without pagination',
+    })
+    @ApiOkResponse({
+        description: 'All channels',
+        type: ChannelSummary,
+        isArray: true,
+    })
+    public async getAllChannels(): Promise<ChannelSummary[]> {
+        return this.channelService.allChannels()
     }
 
     @Get('channel/:id')
